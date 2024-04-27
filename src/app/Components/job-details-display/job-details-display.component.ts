@@ -35,7 +35,6 @@ export class JobDetailsComponent implements OnInit {
   jobDetails!: JobDetailsData;
 
   goBack() {
-
     this.location.back()
   }
 

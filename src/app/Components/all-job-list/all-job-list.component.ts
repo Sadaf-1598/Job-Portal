@@ -40,6 +40,17 @@ export class AllJobListComponent implements OnInit {
     this.commonservice.fetchData().subscribe(data => {
       this.jobList = data;
       this.commonservice.DuplicateJobList = this.jobList;
+
+      if (localStorage['favoriteJob']) {
+        let favoriteJobList: JobData[] = JSON.parse(localStorage.getItem('favoriteJob') || '{}');
+        this.jobList.forEach(x => {
+          favoriteJobList.forEach((y, i) => {
+            if (x.id === y.id) {
+              x.isSelectedFavorite = y.isSelectedFavorite
+            }
+          })
+        });
+      }
     })
   }
 
@@ -50,7 +61,19 @@ export class AllJobListComponent implements OnInit {
     } else {
       item[0].isSelectedFavorite = true;
     }
-    this.onJobSelect(job);
+    if (localStorage['favoriteJob'] && item[0].isSelectedFavorite == false) {
+      let savedArray: JobData[] = JSON.parse(localStorage.getItem('favoriteJob') || '{}')
+      savedArray.forEach((i, index) => {
+        if (i.id === item[0].id) {
+          savedArray.splice(index, 1);
+        }
+      });
+      localStorage.setItem('favoriteJob', JSON.stringify(savedArray));
+    } else {
+      this.commonservice.selectedJobArray = []
+      this.onJobSelect(job);
+    }
+
   }
 
   onJobSelect(job: JobData) {
@@ -58,13 +81,27 @@ export class AllJobListComponent implements OnInit {
       this.commonservice.selectedJobArray.push(job);
       this.commonservice.duplicateArray = this.commonservice.selectedJobArray;
       this.commonservice.favoriteJob = this.commonservice.selectedJobArray;
+      let savedArray: JobData[] = JSON.parse(localStorage.getItem('favoriteJob') || '{}')
+      if (savedArray.length > 0) {
+        let idMap = new Map<number, JobData>(savedArray.map(obj => [obj.id, obj]));
+        for (let obj of this.commonservice.favoriteJob) {
+          if (!idMap.has(obj.id)) {
+            savedArray.push(obj);
+            idMap.set(obj.id, obj);
+          }
+          localStorage.setItem('favoriteJob', JSON.stringify(savedArray))
+        }
+      } else {
+        localStorage.setItem('favoriteJob', JSON.stringify(this.commonservice.favoriteJob))
+      }
     }
     else {
       for (let i = 0; i < this.commonservice.selectedJobArray.length; i++) {
         if (this.commonservice.selectedJobArray.find(x => x.id === job.id) === undefined) {
           this.commonservice.duplicateArray.push(job);
           break;
-        } else {
+        }
+        else {
           this.commonservice.duplicateArray.forEach((item, index) => {
             if (item.id === job.id) {
               this.commonservice.duplicateArray.splice(index, 1);
@@ -75,14 +112,25 @@ export class AllJobListComponent implements OnInit {
       }
       this.commonservice.selectedJobArray = this.commonservice.duplicateArray;
       this.commonservice.favoriteJob = this.commonservice.selectedJobArray;
+      let savedArray: JobData[] = JSON.parse(localStorage.getItem('favoriteJob') || '{}')
+      if (savedArray.length > 0) {
+        let idMap = new Map<number, JobData>(savedArray.map(obj => [obj.id, obj]));
+        for (let obj of this.commonservice.favoriteJob) {
+          if (!idMap.has(obj.id)) {
+            savedArray.push(obj);
+            idMap.set(obj.id, obj);
+          }
+          localStorage.setItem('favoriteJob', JSON.stringify(savedArray))
+        }
+      } else {
+        localStorage.setItem('favoriteJob', JSON.stringify(this.commonservice.favoriteJob))
+      }
     }
   }
-
 
   jobDetail(selectedJob: JobData) {
     this.commonservice.SelectedJob = selectedJob;
     this.router.navigate(['/jobDetails']);
   }
-
 }
 

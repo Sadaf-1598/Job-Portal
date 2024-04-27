@@ -1,4 +1,4 @@
-<div *ngIf="isFavorite">
+<div *ngIf="favoriteJobList.length > 0">
     <div *ngFor="let favoriteJob of favoriteJobList">
         <div class="row">
             <div class="col">
@@ -16,6 +16,6 @@
         </div>
     </div>
 </div>
-<div *ngIf="!isFavorite">
+<div *ngIf="favoriteJobList.length == 0">
     <div class="favjob">{{noFavJob}}</div>
 </div>
